@@ -20,7 +20,7 @@ function parseArgs(argv: string[]): {
   let output = '';
   let title = '';
   let delay = 500;
-  let maxPages = 200;
+  let maxPages = 500;
 
   for (let i = 1; i < args.length; i++) {
     switch (args[i]) {
@@ -34,7 +34,7 @@ function parseArgs(argv: string[]): {
         delay = parseInt(args[++i] ?? '500', 10);
         break;
       case '--max-pages':
-        maxPages = parseInt(args[++i] ?? '200', 10);
+        maxPages = parseInt(args[++i] ?? '500', 10);
         break;
       default:
         console.error(`Unknown argument: ${args[i]}`);

@@ -68,7 +68,7 @@ function extractLinks($: cheerio.CheerioAPI, baseUrl: string): string[] {
 }
 
 export async function crawl(seedUrl: string, options?: CrawlOptions): Promise<CrawledPage[]> {
-  const { delay = 500, maxPages = 200 } = options ?? {};
+  const { delay = 500, maxPages = 500 } = options ?? {};
   const normalizedSeed = normalizeUrl(seedUrl);
   const pages: CrawledPage[] = [];
   const visited = new Set<string>();
@@ -101,6 +101,12 @@ export async function crawl(seedUrl: string, options?: CrawlOptions): Promise<Cr
     if (queue.length > 0 && pages.length < maxPages) {
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
+  }
+
+  if (queue.length > 0) {
+    process.stderr.write(
+      `Warning: hit --max-pages limit (${maxPages}). ${queue.length} pages in the queue were not crawled.\n`
+    );
   }
 
   return pages;
