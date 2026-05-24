@@ -42,6 +42,24 @@ describe('extractContent', () => {
     expect(content).not.toContain('<h3>');
     expect(content).toContain('Plain content');
   });
+
+  it('inserts space between adjacent inline sibling elements with no whitespace', () => {
+    const html = `<html><body><main>
+      <a href="/article">
+        <span class="prc-Token-TokenBase">AI</span><span class="prc-Token-TokenBase">Machine Learning</span>
+      </a>
+      <p><span>foo</span><em>bar</em><code>baz</code></p>
+    </main></body></html>`;
+    const { content } = extractContent(html);
+    // A space must appear between adjacent inline closing/opening tags in the HTML
+    // so that EPUB readers (which have no CSS margin) don't concatenate the text.
+    expect(content).toContain('</span> <span');
+    expect(content).not.toContain('</span><span');
+    expect(content).toContain('</span> <em>');
+    expect(content).not.toContain('</span><em>');
+    expect(content).toContain('</em> <code>');
+    expect(content).not.toContain('</em><code>');
+  });
 });
 
 describe('rewriteLinks', () => {
