@@ -1,4 +1,31 @@
-import { rewriteLinks } from './extractor';
+import { extractContent, rewriteLinks } from './extractor';
+
+describe('extractContent', () => {
+  it('adds headings to ghd-tool sections using nav label text', () => {
+    const html = `<html><body>
+      <nav>
+        <a data-tool="vscode">Visual Studio Code</a>
+        <a data-tool="webui">Web browser</a>
+      </nav>
+      <main>
+        <div class="ghd-tool vscode"><p>VS Code content</p></div>
+        <div class="ghd-tool webui"><p>Web browser content</p></div>
+      </main>
+    </body></html>`;
+    const { content } = extractContent(html);
+    expect(content).toContain('<h3>Visual Studio Code</h3>');
+    expect(content).toContain('<h3>Web browser</h3>');
+    expect(content).toContain('VS Code content');
+    expect(content).toContain('Web browser content');
+  });
+
+  it('does not add headings when no ghd-tool sections are present', () => {
+    const html = `<html><body><main><p>Plain content</p></main></body></html>`;
+    const { content } = extractContent(html);
+    expect(content).not.toContain('<h3>');
+    expect(content).toContain('Plain content');
+  });
+});
 
 describe('rewriteLinks', () => {
   const baseUrl = 'https://docs.example.com/en/copilot';

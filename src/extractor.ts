@@ -28,6 +28,24 @@ export function extractContent(html: string, pageUrl?: string): { title: string;
     $('title').first().text().trim() ||
     'Untitled';
 
+  // Collect tool display names from tab nav before stripping it, then inject
+  // headings into each tool content section so they survive nav removal.
+  const toolLabels = new Map<string, string>();
+  $('a[data-tool]').each((_i, el) => {
+    const id = $(el).attr('data-tool');
+    const label = $(el).text().trim();
+    if (id && label) toolLabels.set(id, label);
+  });
+  if (toolLabels.size > 0) {
+    $('div[class*="ghd-tool"]').each((_i, el) => {
+      const toolId = ($(el).attr('class') ?? '').split(/\s+/).find((c) => c !== 'ghd-tool');
+      if (toolId) {
+        const label = toolLabels.get(toolId) ?? toolId;
+        $(el).prepend(`<h3>${label}</h3>`);
+      }
+    });
+  }
+
   STRIP_SELECTORS.forEach((sel) => $(sel).remove());
 
   // Resolve relative image src to absolute so the EPUB library can download them
