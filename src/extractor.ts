@@ -135,11 +135,19 @@ export function extractContent(html: string, pageUrl?: string): { title: string;
   }
   if (!content) content = $.html('body');
 
+  content = content ?? '<p>No content extracted.</p>';
+
+  // XHTML (required by EPUB) mandates that all attributes have explicit values.
+  // Cheerio serializes HTML5 boolean attributes as attr="" (empty string); convert
+  // them to attr="attr" so XHTML parsers accept the content without errors.
+  const boolAttrs = 'hidden|checked|disabled|readonly|selected|multiple|autofocus|autoplay|controls|loop|muted|open|required|reversed';
+  content = content.replace(new RegExp(`\\b(${boolAttrs})=""`, 'g'), '$1="$1"');
+
   // Insert a space between adjacent inline elements with no whitespace between
   // them. Tag/chip components (e.g. Primer prc-Token spans) rely on CSS margin
   // for visual separation; without CSS in EPUB they concatenate.
   const inlineTag = '(?:span|a|em|strong|b|i|code|label|button)';
-  content = (content ?? '<p>No content extracted.</p>').replace(
+  content = content.replace(
     new RegExp(`(</${inlineTag}>)(<${inlineTag}[\\s>])`, 'g'),
     '$1 $2'
   );
