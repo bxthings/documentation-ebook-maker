@@ -1,9 +1,14 @@
 import * as cheerio from 'cheerio';
 
 const CONTENT_SELECTORS = [
+  // 'article' before 'main article': Next.js streaming SSR serves a loading-spinner
+  // article inside <main> and the real article in a hidden SSR div elsewhere in the
+  // document. Selecting all articles and taking the richest picks the real content.
+  // On sites with only one article (e.g. GitHub docs after stripping nav), the two
+  // selectors are equivalent.
+  'article',
   'main article',
   'main',
-  'article',
   '.markdown-body',
   '.content',
   'body',
@@ -110,13 +115,23 @@ export function extractContent(html: string, pageUrl?: string): { title: string;
     });
   }
 
+  // For each selector, pick the match with the most text content rather than
+  // blindly taking the first. Sites using React streaming SSR (Next.js) serve
+  // a loading-spinner placeholder in the visible <main> and the real content in
+  // a hidden <div id="S:N"> that JS will swap in — the real article has far
+  // more text than the spinner, so max-text wins.
   let content: string | null = null;
   for (const sel of CONTENT_SELECTORS) {
-    const found = $(sel);
-    if (found.length > 0) {
-      content = $.html(found.first());
-      break;
-    }
+    const matches = $(sel);
+    if (matches.length === 0) continue;
+    let best = matches[0];
+    let bestLen = $(matches[0]).text().length;
+    matches.each((_, el) => {
+      const len = $(el).text().length;
+      if (len > bestLen) { best = el; bestLen = len; }
+    });
+    content = $.html($(best));
+    break;
   }
   if (!content) content = $.html('body');
 

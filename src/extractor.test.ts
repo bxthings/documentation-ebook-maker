@@ -91,6 +91,21 @@ describe('extractContent', () => {
     expect(content.indexOf('GitHub Copilot')).toBeLessThan(content.indexOf('Body text'));
   });
 
+  it('picks the richest article when a loading-spinner placeholder article precedes real content', () => {
+    // Simulates Next.js streaming SSR: one article in <main> has loading placeholder text,
+    // the real content article lives in a hidden SSR div elsewhere in the document.
+    const html = `<html><body>
+      <main><article><span>Loading...</span><span>Loading...</span></article></main>
+      <div id="S:1">
+        <article><h1>Real Content</h1><p>${'Actual documentation text. '.repeat(30)}</p></article>
+      </div>
+    </body></html>`;
+    const { title, content } = extractContent(html);
+    expect(title).toBe('Real Content');
+    expect(content).toContain('Actual documentation text');
+    expect(content).not.toMatch(/^Loading/);
+  });
+
   it('omits breadcrumb when no Breadcrumb nav is present', () => {
     const html = `<html><body><main><h1>Page</h1><p>Text.</p></main></body></html>`;
     const { content } = extractContent(html);
