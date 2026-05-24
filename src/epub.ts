@@ -29,6 +29,7 @@ export async function buildEpub(pages: CrawledPage[], options: EpubOptions): Pro
       description: options.title,
       author: 'document-extractor',
       lang: 'en',
+      appendChapterTitles: false,
       content,
     },
     options.outputPath
