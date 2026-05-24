@@ -55,6 +55,21 @@ export function extractContent(html: string, pageUrl?: string): { title: string;
     });
   });
 
+  // Capture breadcrumb links before the nav strip removes them.
+  // The breadcrumb <a> hrefs survive into rewriteLinks, which rewrites them to
+  // chapter filenames when the target page was crawled.
+  let breadcrumbHtml = '';
+  const $bc = $('nav[aria-label="Breadcrumb"]');
+  if ($bc.length > 0) {
+    const links: string[] = [];
+    $bc.find('a').each((_i, el) => {
+      const href = $(el).attr('href') ?? '';
+      const text = $(el).text().trim();
+      if (text) links.push(href ? `<a href="${href.replace(/"/g, '&quot;')}">${text}</a>` : text);
+    });
+    if (links.length > 0) breadcrumbHtml = `<p>${links.join(' / ')}</p>\n`;
+  }
+
   STRIP_SELECTORS.forEach((sel) => $(sel).remove());
 
   // Convert card-style links where <a> wraps heading + body content:
@@ -114,7 +129,7 @@ export function extractContent(html: string, pageUrl?: string): { title: string;
     '$1 $2'
   );
 
-  return { title, content };
+  return { title, content: breadcrumbHtml + content };
 }
 
 export function rewriteLinks(

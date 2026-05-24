@@ -72,7 +72,7 @@ async function main(): Promise<void> {
   }
 
   console.error(`\nCrawled ${pages.length} page(s). Building EPUB...`);
-  await buildEpub(pages, { title, outputPath: output });
+  await buildEpub(pages, { title, outputPath: output, seedUrl });
   console.log(output);
 }
 

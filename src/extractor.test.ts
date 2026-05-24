@@ -72,6 +72,33 @@ describe('extractContent', () => {
     expect(content).not.toContain('<hr');
   });
 
+  it('extracts breadcrumb links before nav is stripped and prepends them to content', () => {
+    const html = `<html><body>
+      <nav aria-label="Breadcrumb">
+        <ul>
+          <li><a href="/en/copilot">GitHub Copilot</a></li>
+          <li><a href="/en/copilot/concepts">Concepts</a></li>
+          <li><a href="/en/copilot/concepts/agents">Agents</a></li>
+        </ul>
+      </nav>
+      <main><h1>About Agents</h1><p>Body text.</p></main>
+    </body></html>`;
+    const { content } = extractContent(html);
+    // Breadcrumb links should appear in output (nav itself is stripped, links rescued first)
+    expect(content).toContain('<a href="/en/copilot">GitHub Copilot</a>');
+    expect(content).toContain('<a href="/en/copilot/concepts">Concepts</a>');
+    // Breadcrumb should be before the main content
+    expect(content.indexOf('GitHub Copilot')).toBeLessThan(content.indexOf('Body text'));
+  });
+
+  it('omits breadcrumb when no Breadcrumb nav is present', () => {
+    const html = `<html><body><main><h1>Page</h1><p>Text.</p></main></body></html>`;
+    const { content } = extractContent(html);
+    expect(content).toContain('Text.');
+    // No stray breadcrumb paragraph
+    expect(content).not.toMatch(/<p>[^<]*\/[^<]*<\/p>/);
+  });
+
   it('inserts space between adjacent inline sibling elements with no whitespace', () => {
     const html = `<html><body><main>
       <a href="/article">
