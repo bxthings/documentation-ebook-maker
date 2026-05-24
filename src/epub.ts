@@ -1,20 +1,17 @@
 import { EPub } from '@lesjoursfr/html-to-epub';
 import { CrawledPage } from './crawler';
 import { extractContent, rewriteLinks } from './extractor';
+import { buildUrlToFilenameMap, chapterFilename } from './url-map';
+
+export { buildUrlToFilenameMap } from './url-map';
 
 export interface EpubOptions {
   title: string;
   outputPath: string;
 }
 
-function chapterFilename(index: number): string {
-  return `chapter-${String(index + 1).padStart(3, '0')}`;
-}
-
 export async function buildEpub(pages: CrawledPage[], options: EpubOptions): Promise<void> {
-  const urlToFilename = new Map<string, string>(
-    pages.map((page, i) => [page.url, chapterFilename(i)])
-  );
+  const urlToFilename = buildUrlToFilenameMap(pages);
 
   const content = pages.map((page, i) => {
     const { content: extracted } = extractContent(page.html, page.url);
