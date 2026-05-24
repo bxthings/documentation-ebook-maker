@@ -46,6 +46,15 @@ export function extractContent(html: string, pageUrl?: string): { title: string;
     });
   }
 
+  // Unwrap self-referential heading anchor links (browser "copy link" affordance).
+  // Remove aria-hidden symbol spans first, then replace the <a> with its text.
+  $('h1,h2,h3,h4,h5,h6').each((_i, el) => {
+    $(el).find('a[href^="#"]').each((_j, anchor) => {
+      $(anchor).find('[aria-hidden]').remove();
+      $(anchor).replaceWith($(anchor).html() ?? '');
+    });
+  });
+
   STRIP_SELECTORS.forEach((sel) => $(sel).remove());
 
   // Resolve relative image src to absolute so the EPUB library can download them

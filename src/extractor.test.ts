@@ -19,6 +19,23 @@ describe('extractContent', () => {
     expect(content).toContain('Web browser content');
   });
 
+  it('unwraps self-referential heading anchor links and removes symbol spans', () => {
+    const html = `<html><body><main>
+      <h2 id="intro" tabindex="-1">
+        <a class="heading-link" href="#intro">Introduction<span class="heading-link-symbol" aria-hidden="true"></span></a>
+      </h2>
+      <h3 id="sub" tabindex="-1">
+        <a class="heading-link" href="#sub">Subsection<span aria-hidden="true">¶</span></a>
+      </h3>
+    </main></body></html>`;
+    const { content } = extractContent(html);
+    expect(content).toContain('Introduction');
+    expect(content).toContain('Subsection');
+    expect(content).not.toContain('href="#intro"');
+    expect(content).not.toContain('href="#sub"');
+    expect(content).not.toContain('heading-link-symbol');
+  });
+
   it('does not add headings when no ghd-tool sections are present', () => {
     const html = `<html><body><main><p>Plain content</p></main></body></html>`;
     const { content } = extractContent(html);
