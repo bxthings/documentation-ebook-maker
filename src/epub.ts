@@ -17,7 +17,7 @@ export async function buildEpub(pages: CrawledPage[], options: EpubOptions): Pro
   );
 
   const content = pages.map((page, i) => {
-    const { content: extracted } = extractContent(page.html);
+    const { content: extracted } = extractContent(page.html, page.url);
     const rewritten = rewriteLinks(extracted, urlToFilename, page.url);
     return {
       title: page.title,

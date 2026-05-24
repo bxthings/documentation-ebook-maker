@@ -72,6 +72,7 @@ export async function crawl(seedUrl: string, options?: CrawlOptions): Promise<Cr
   const normalizedSeed = normalizeUrl(seedUrl);
   const pages: CrawledPage[] = [];
   const visited = new Set<string>();
+  const queued = new Set<string>([normalizedSeed]);
   const queue: string[] = [normalizedSeed];
 
   while (queue.length > 0 && pages.length < maxPages) {
@@ -93,8 +94,9 @@ export async function crawl(seedUrl: string, options?: CrawlOptions): Promise<Cr
 
     const links = extractLinks($, url);
     for (const link of links) {
-      if (!visited.has(link) && isSubpath(normalizedSeed, link)) {
+      if (!visited.has(link) && !queued.has(link) && isSubpath(normalizedSeed, link)) {
         queue.push(link);
+        queued.add(link);
       }
     }
 

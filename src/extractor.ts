@@ -20,7 +20,7 @@ const STRIP_SELECTORS = [
   '.toc',
 ];
 
-export function extractContent(html: string): { title: string; content: string } {
+export function extractContent(html: string, pageUrl?: string): { title: string; content: string } {
   const $ = cheerio.load(html);
 
   const title =
@@ -29,6 +29,20 @@ export function extractContent(html: string): { title: string; content: string }
     'Untitled';
 
   STRIP_SELECTORS.forEach((sel) => $(sel).remove());
+
+  // Resolve relative image src to absolute so the EPUB library can download them
+  if (pageUrl) {
+    $('img[src]').each((_i, el) => {
+      const src = $(el).attr('src');
+      if (src) {
+        try {
+          $(el).attr('src', new URL(src, pageUrl).href);
+        } catch {
+          // leave as-is
+        }
+      }
+    });
+  }
 
   let content: string | null = null;
   for (const sel of CONTENT_SELECTORS) {
@@ -69,5 +83,5 @@ export function rewriteLinks(
     }
   });
 
-  return $.html();
+  return $('body').html() ?? html;
 }
