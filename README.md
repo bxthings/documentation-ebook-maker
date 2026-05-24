@@ -1,5 +1,5 @@
 # documentation-ebook-maker
-Crawl a documentation site and produce a single EPUB file for offline reading on Kindle.
+Crawl a documentation site and produce a single EPUB file for offline reading on supporting e-readers, such as Amazon Kindle and Apple Books.
 
 Follows all links that are subpaths of the seed URL, strips navigation chrome, rewrites internal links to EPUB chapter references, and packages everything into a table-of-contents-enabled EPUB3 file.
 
