@@ -43,6 +43,35 @@ describe('extractContent', () => {
     expect(content).toContain('Plain content');
   });
 
+  it('converts card-style links to linked heading, plain body, and hr separator', () => {
+    const html = `<html><body><main>
+      <a href="/article-1">
+        <span>Tag A</span>
+        <h3>First Article</h3>
+        <p>Description one.</p>
+      </a>
+      <a href="/article-2">
+        <span>Tag B</span>
+        <h3>Second Article</h3>
+        <p>Description two.</p>
+      </a>
+    </main></body></html>`;
+    const { content } = extractContent(html);
+    expect(content).toContain('<h3><a href="/article-1">First Article</a></h3>');
+    expect(content).toContain('<h3><a href="/article-2">Second Article</a></h3>');
+    expect(content).toContain('Description one');
+    expect(content).toContain('Description two');
+    // exactly one hr between the two cards, none before the first
+    expect(content.match(/<hr/g)?.length).toBe(1);
+  });
+
+  it('does not convert a simple inline link that does not wrap a heading', () => {
+    const html = `<html><body><main><p><a href="/x">simple link</a></p><h3>A heading</h3></main></body></html>`;
+    const { content } = extractContent(html);
+    expect(content).toContain('<a href="/x">simple link</a>');
+    expect(content).not.toContain('<hr');
+  });
+
   it('inserts space between adjacent inline sibling elements with no whitespace', () => {
     const html = `<html><body><main>
       <a href="/article">

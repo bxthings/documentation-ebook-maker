@@ -57,6 +57,30 @@ export function extractContent(html: string, pageUrl?: string): { title: string;
 
   STRIP_SELECTORS.forEach((sel) => $(sel).remove());
 
+  // Convert card-style links where <a> wraps heading + body content:
+  //   before: entire card is one large link with no visual boundary
+  //   after:  heading is linked, body is plain text, <hr> separates cards
+  // EPUB renderers collapse block structure inside <a>, causing heading and
+  // body to concatenate with adjacent cards.
+  const cardSelector = 'a:has(h1,h2,h3,h4,h5,h6)';
+  const cards: Array<{ $el: ReturnType<typeof $>; hasPrevCard: boolean }> = [];
+  $(cardSelector).each((_i, el) => {
+    cards.push({ $el: $(el), hasPrevCard: $(el).prev(cardSelector).length > 0 });
+  });
+  cards.forEach(({ $el, hasPrevCard }) => {
+    const href = ($el.attr('href') ?? '#').replace(/"/g, '&quot;');
+    const parts: string[] = hasPrevCard ? ['<hr/>'] : [];
+    $el.children().each((_j, child) => {
+      const tag = (child as any).tagName as string | undefined;
+      if (tag && /^h[1-6]$/.test(tag)) {
+        parts.push(`<${tag}><a href="${href}">${$(child).html() ?? ''}</a></${tag}>`);
+      } else {
+        parts.push($.html(child));
+      }
+    });
+    $el.replaceWith(parts.join(''));
+  });
+
   // Resolve relative image src to absolute so the EPUB library can download them
   if (pageUrl) {
     $('img[src]').each((_i, el) => {
