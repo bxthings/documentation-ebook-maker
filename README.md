@@ -30,11 +30,11 @@ Progress is written to stderr. The output path is written to stdout on success.
 
 ## Examples
 
-**Anthropic Academy:**
+**Anthropic Claude platform documentation:**
 ```
-npx tsx src/index.ts https://anthropic.skilljar.com/ \
-  --title "Anthropic Academy" \
-  --output anthropic-academy.epub
+npx tsx src/index.ts https://platform.claude.com/docs/en/ \
+  --title "Anthropic Claude" \
+  --output anthropic-claude.epub
 ```
 
 **GitHub Copilot documentation:**
