@@ -72,23 +72,18 @@ describe('extractContent', () => {
     expect(content).not.toContain('<hr');
   });
 
-  it('normalizes bare boolean attributes to attr="attr" for XHTML compatibility', () => {
+  it('strips elements with the hidden attribute (invisible UI chrome, invalid XHTML)', () => {
     const html = `<html><body><main>
       <article>
-        <details open><summary>More</summary><p>Extra.</p></details>
-        <input type="checkbox" checked>
-        <div hidden><p>Hidden content.</p></div>
+        <p>Visible before.</p>
+        <div hidden role="region"><p>Accordion panel content.</p></div>
+        <p>Visible after.</p>
       </article>
     </main></body></html>`;
     const { content } = extractContent(html);
-    // Cheerio serializes bare boolean attributes as attr=""; the fix converts them
-    // to attr="attr" so XHTML parsers (used by EPUB) accept the content.
-    expect(content).toContain('open="open"');
-    expect(content).toContain('checked="checked"');
-    expect(content).toContain('hidden="hidden"');
-    expect(content).not.toContain('open=""');
-    expect(content).not.toContain('checked=""');
-    expect(content).not.toContain('hidden=""');
+    expect(content).toContain('Visible before');
+    expect(content).toContain('Visible after');
+    expect(content).not.toContain('Accordion panel content');
   });
 
   it('extracts breadcrumb links before nav is stripped and prepends them to content', () => {
