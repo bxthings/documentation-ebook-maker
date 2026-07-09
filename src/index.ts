@@ -1,5 +1,6 @@
 import { resolve } from 'path';
 import { crawl } from './crawler';
+import { crawlHeadless } from './headless-crawler';
 import { buildEpub } from './epub';
 
 function parseArgs(argv: string[]): {
@@ -8,11 +9,12 @@ function parseArgs(argv: string[]): {
   title: string;
   delay: number;
   maxPages: number;
+  headless: boolean;
 } {
   const args = argv.slice(2);
 
   if (args.length === 0 || args[0].startsWith('-')) {
-    console.error('Usage: tsx src/index.ts <url> [--output <file.epub>] [--title <title>] [--delay <ms>] [--max-pages <n>]');
+    console.error('Usage: tsx src/index.ts <url> [--output <file.epub>] [--title <title>] [--delay <ms>] [--max-pages <n>] [--headless]');
     process.exit(1);
   }
 
@@ -21,6 +23,7 @@ function parseArgs(argv: string[]): {
   let title = '';
   let delay = 500;
   let maxPages = 500;
+  let headless = false;
 
   for (let i = 1; i < args.length; i++) {
     switch (args[i]) {
@@ -35,6 +38,9 @@ function parseArgs(argv: string[]): {
         break;
       case '--max-pages':
         maxPages = parseInt(args[++i] ?? '500', 10);
+        break;
+      case '--headless':
+        headless = true;
         break;
       default:
         console.error(`Unknown argument: ${args[i]}`);
@@ -51,20 +57,23 @@ function parseArgs(argv: string[]): {
     title = new URL(seedUrl).hostname;
   }
 
-  return { seedUrl, output: resolve(output), title, delay, maxPages };
+  return { seedUrl, output: resolve(output), title, delay, maxPages, headless };
 }
 
 async function main(): Promise<void> {
-  const { seedUrl, output, title, delay, maxPages } = parseArgs(process.argv);
+  const { seedUrl, output, title, delay, maxPages, headless } = parseArgs(process.argv);
 
   console.error(`Crawling: ${seedUrl}`);
   console.error(`Output:   ${output}`);
   console.error(`Title:    ${title}`);
   console.error(`Delay:    ${delay}ms`);
   console.error(`Max pages: ${maxPages}`);
+  console.error(`Headless: ${headless}`);
   console.error('');
 
-  const pages = await crawl(seedUrl, { delay, maxPages });
+  const pages = headless
+    ? await crawlHeadless(seedUrl, { delay, maxPages })
+    : await crawl(seedUrl, { delay, maxPages });
 
   if (pages.length === 0) {
     console.error('No pages crawled — nothing to write.');

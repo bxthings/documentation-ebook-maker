@@ -1,4 +1,5 @@
-import { EPub } from '@lesjoursfr/html-to-epub';
+import { resolve } from 'path';
+import { EPub, EpubContentOptions } from '@lesjoursfr/html-to-epub';
 import { CrawledPage } from './crawler';
 import { extractContent, rewriteLinks } from './extractor';
 import { buildUrlToFilenameMap, buildTocTree, renderTocHtml, chapterFilename } from './url-map';
@@ -15,7 +16,7 @@ export async function buildEpub(pages: CrawledPage[], options: EpubOptions): Pro
   const urlToFilename = buildUrlToFilenameMap(pages);
   const tocTree = buildTocTree(pages, options.seedUrl, urlToFilename);
 
-  const content = pages.map((page, i) => {
+  const content: EpubContentOptions[] = pages.map((page, i) => {
     const { content: extracted } = extractContent(page.html, page.url);
     const rewritten = rewriteLinks(extracted, urlToFilename, page.url);
     return {
@@ -43,6 +44,7 @@ export async function buildEpub(pages: CrawledPage[], options: EpubOptions): Pro
       lang: 'en',
       appendChapterTitles: false,
       hideToC: true,
+      customOpfTemplatePath: resolve(__dirname, '..', 'templates', 'content.opf.ejs'),
       content,
     },
     options.outputPath

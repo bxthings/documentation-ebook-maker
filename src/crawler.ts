@@ -20,7 +20,7 @@ export function isSubpath(seedUrl: string, candidateUrl: string): boolean {
   return candidatePath === seedPath || candidatePath.startsWith(seedPath + '/');
 }
 
-function normalizeUrl(url: string): string {
+export function normalizeUrl(url: string): string {
   const u = new URL(url);
   u.hash = '';
   u.search = '';
@@ -51,7 +51,7 @@ async function fetchPage(url: string): Promise<string | null> {
   }
 }
 
-function extractLinks($: cheerio.CheerioAPI, baseUrl: string): string[] {
+export function extractLinks($: cheerio.CheerioAPI, baseUrl: string): string[] {
   const links: string[] = [];
   $('a[href]').each((_i, el) => {
     const href = $(el).attr('href');

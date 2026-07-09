@@ -5,11 +5,13 @@
   "scripts": {
     "start": "tsx src/index.ts",
     "test": "jest",
-    "validate": "bash scripts/validate-epub.sh"
+    "validate": "bash scripts/validate-epub.sh",
+    "test:epub": "tsx scripts/test-epub-structure.ts"
   },
   "dependencies": {
     "@lesjoursfr/html-to-epub": "^6.1.0",
-    "cheerio": "^1.0.0"
+    "cheerio": "^1.0.0",
+    "playwright": "^1.61.1"
   },
   "devDependencies": {
     "@types/jest": "^29.0.0",
