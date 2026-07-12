@@ -30,11 +30,11 @@ Progress is written to stderr. The output path is written to stdout on success.
 
 ## Examples
 
-**Anthropic Claude platform documentation:**
+**Claude Code documentation:**
 ```
-npx tsx src/index.ts https://platform.claude.com/docs/en/ \
-  --title "Anthropic Claude" \
-  --output anthropic-claude.epub
+npx tsx src/index.ts https://code.claude.com/docs/en/ \
+  --title "Claude Code" \
+  --output claude-code.epub
 ```
 
 **GitHub Copilot documentation:**
