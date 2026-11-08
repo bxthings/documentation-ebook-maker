@@ -37,6 +37,11 @@ export interface TocNode {
  * single root node (or a top-level item when grouped with orphaned pages).
  * Pages whose immediate URL parent was not crawled are attached to the nearest
  * crawled ancestor; true orphans surface at the top level.
+ *
+ * Order follows `pages` (crawl order, i.e. chapter order), not URL depth:
+ * a shallow page such as /privacy-policy must not jump ahead of deeper
+ * siblings that were crawled first. All nodes are built up front, so a
+ * child can be attached to its parent even when the parent is crawled later.
  */
 export function buildTocTree(
   pages: CrawledPage[],
@@ -57,12 +62,10 @@ export function buildTocTree(
 
   const roots: TocNode[] = [];
 
-  // Sort shallower paths first so parent nodes exist when children are wired up.
-  const sortedPaths = [...byPath.keys()].sort(
-    (a, b) => a.split('/').length - b.split('/').length
-  );
-
-  for (const path of sortedPaths) {
+  // Iterate in crawl (chapter) order. Parents are looked up in the
+  // pre-built map, so no shallower-first sort is needed to wire children up.
+  for (const page of pages) {
+    const path = new URL(page.url).pathname.replace(/\/$/, '');
     const node = byPath.get(path)!;
 
     if (path === seedPath) {

@@ -79,6 +79,43 @@ describe('buildTocTree', () => {
     const tree = buildTocTree(pages, seed, map);
     expect(tree[0].children[0].title).toBe('Agents');
   });
+
+  it('lists siblings in crawl order, not URL-depth order', () => {
+    // Regression: /privacy-policy is shallower than /essay/... and /post/...
+    // but was crawled last, so it must stay last in the Contents, like an
+    // appendix, instead of jumping ahead of the deeper siblings.
+    const site = 'https://darioamodei.com';
+    const pages = [
+      fakePage(`${site}/`, 'Dario Amodei'),
+      fakePage(`${site}/essay/the-adolescence-of-technology`, 'Adolescence'),
+      fakePage(`${site}/essay/machines-of-loving-grace`, 'Machines'),
+      fakePage(`${site}/post/on-deepseek-and-export-controls`, 'DeepSeek'),
+      fakePage(`${site}/privacy-policy`, 'Privacy policy'),
+    ];
+    const map = buildUrlToFilenameMap(pages);
+    const tree = buildTocTree(pages, site, map);
+    expect(tree).toHaveLength(1);
+    expect(tree[0].children.map((c) => c.title)).toEqual([
+      'Adolescence',
+      'Machines',
+      'DeepSeek',
+      'Privacy policy',
+    ]);
+  });
+
+  it('nests a child under a parent crawled after it', () => {
+    // All nodes are built up front, so wiring must not depend on the
+    // parent appearing first in crawl order.
+    const pages = [
+      fakePage(seed, 'Root'),
+      fakePage(`${seed}/concepts/agents`, 'Agents'),
+      fakePage(`${seed}/concepts`, 'Concepts'),
+    ];
+    const map = buildUrlToFilenameMap(pages);
+    const tree = buildTocTree(pages, seed, map);
+    expect(tree[0].children.map((c) => c.title)).toEqual(['Concepts']);
+    expect(tree[0].children[0].children[0].title).toBe('Agents');
+  });
 });
 
 describe('renderTocHtml', () => {
