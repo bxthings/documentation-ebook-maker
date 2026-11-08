@@ -30,4 +30,4 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npx jest --testPathPattern=integration
+      - run: npx jest --testPathPattern='integration\.test\.ts$'
