@@ -83,12 +83,25 @@ export function extractContent(html: string, pageUrl?: string): { title: string;
     });
   });
 
-  // Drop footnote markers from headings. A footnote in a heading (e.g. the
-  // title footnote on an essay) has no working link — its number is just
-  // text — and its tooltip is already removed above, so the marker would
-  // read as a stray digit in the chapter heading. The footnote item itself
-  // stays in the Footnotes section at the end of the chapter.
-  $('h1,h2,h3,h4,h5,h6').find('sup[id^="fnref"], sup[class*="footnote"]').remove();
+  // Keep footnote markers in headings, but make them working links.
+  // A footnote in a heading (e.g. the title footnote on an essay) may
+  // have no link at all — just a number plus a hover tooltip, which is
+  // already removed above. Turn it into a link to its footnote item
+  // instead: removing the marker would orphan the footnote item and
+  // break its back-link, which targets this sup's id. Title derivation
+  // (cleanH1Text) still strips the marker, so the table of contents
+  // stays clean. No link is invented when the footnote item is absent.
+  $('h1,h2,h3,h4,h5,h6').find('sup[id^="fnref"], sup[class*="footnote"]').each((_i, el) => {
+    const $sup = $(el);
+    if ($sup.find('a[href^="#fn:"]').length > 0) return;
+    const id = $sup.attr('id') ?? '';
+    const num = id.startsWith('fnref:') ? id.slice('fnref:'.length) : $sup.text().trim();
+    if (!/^\d+$/.test(num)) return;
+    // Attribute selector, not #fn:N: the colon in the id would be
+    // parsed as a pseudo-class by the selector engine.
+    if ($(`[id="fn:${num}"]`).length === 0) return;
+    $sup.html(`<a href="#fn:${num}">${num}</a>`);
+  });
 
   // Capture breadcrumb links before the nav strip removes them.
   // The breadcrumb <a> hrefs survive into rewriteLinks, which rewrites them to

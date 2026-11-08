@@ -64,11 +64,33 @@ describe('extractContent', () => {
     const html = `<html><body><main><article>
       <h1>Machines of Loving Grace<sup id="fnref:1" class="footnote">1<span class="tooltip" aria-hidden="true"><sup>1</sup> <span><a href="https://allpoetry.com/All-Watched-Over-By-Machines-Of-Loving-Grace">https://allpoetry.com/All-Watched-Over-By-Machines-Of-Loving-Grace</a></span></span></sup></h1>
       <p>Body text.</p>
+      <section><h2 id="footnotes">Footnotes</h2><ol>
+        <li id="fn:1"><sup>1</sup> <span><a href="https://allpoetry.com/All-Watched-Over-By-Machines-Of-Loving-Grace">https://allpoetry.com/All-Watched-Over-By-Machines-Of-Loving-Grace</a></span> <a href="#fnref:1">↩︎</a></li>
+      </ol></section>
     </article></main></body></html>`;
     const { title, content } = extractContent(html);
+    // Title (table of contents) stays clean
     expect(title).toBe('Machines of Loving Grace');
-    expect(content).not.toContain('allpoetry.com');
-    expect(content).toContain('<h1>Machines of Loving Grace</h1>');
+    // Heading keeps the footnote as a working link, not a bare number:
+    // the tooltip URL is gone from the heading and survives only in the
+    // footnote item itself
+    expect(content).toContain('<a href="#fn:1">1</a>');
+    expect(content).toContain('id="fnref:1"');
+    expect(content).toContain('id="fn:1"');
+    // The URL survives only in the footnote item (href + link text = 2
+    // occurrences), not in the heading
+    expect(content.match(/allpoetry\.com/g)?.length).toBe(2);
+  });
+
+  it('does not invent a heading footnote link when the footnote item is absent', () => {
+    const html = `<html><body><main><article>
+      <h1>A Title<sup id="fnref:9" class="footnote">9<span class="tooltip">Tooltip text.</span></span></sup></h1>
+      <p>Body text.</p>
+    </article></main></body></html>`;
+    const { title, content } = extractContent(html);
+    expect(title).toBe('A Title');
+    expect(content).not.toContain('href="#fn:9"');
+    expect(content).not.toContain('Tooltip text');
   });
 
   it('does not add headings when no ghd-tool sections are present', () => {
