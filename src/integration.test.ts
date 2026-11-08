@@ -7,7 +7,9 @@ import AdmZip from 'adm-zip';
 
 const execFileAsync = promisify(execFile);
 const TIMEOUT_MS = 5 * 60 * 1000;
-const CLI = path.resolve(__dirname, '../node_modules/.bin/tsx');
+const PROJECT_ROOT = path.resolve(__dirname, '..');
+const SHOULD_RUN_INTEGRATION_TESTS = process.env.RUN_INTEGRATION_TESTS === 'true';
+const CLI = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 
 function validateEpubStructure(epubPath: string): void {
   expect(fs.existsSync(epubPath)).toBe(true);
@@ -23,7 +25,9 @@ function validateEpubStructure(epubPath: string): void {
   expect(chapters.length).toBeGreaterThanOrEqual(1);
 }
 
-describe('integration', () => {
+const describeIntegration = SHOULD_RUN_INTEGRATION_TESTS ? describe : describe.skip;
+
+describeIntegration('integration', () => {
   let tmpDir: string;
 
   beforeEach(() => {
@@ -38,8 +42,8 @@ describe('integration', () => {
     const outputPath = path.join(tmpDir, 'claude-code.epub');
     await execFileAsync(
       CLI,
-      ['src/index.ts', 'https://code.claude.com/docs/en/', '--output', outputPath, '--max-pages', '50', '--delay', '0'],
-      { maxBuffer: 10 * 1024 * 1024 },
+      ['tsx', 'src/index.ts', 'https://code.claude.com/docs/en/', '--output', outputPath, '--max-pages', '10', '--delay', '500'],
+      { cwd: PROJECT_ROOT, maxBuffer: 10 * 1024 * 1024, timeout: TIMEOUT_MS },
     );
     validateEpubStructure(outputPath);
   }, TIMEOUT_MS);
@@ -48,8 +52,8 @@ describe('integration', () => {
     const outputPath = path.join(tmpDir, 'github-copilot.epub');
     await execFileAsync(
       CLI,
-      ['src/index.ts', 'https://docs.github.com/en/copilot', '--output', outputPath, '--max-pages', '50', '--delay', '0'],
-      { maxBuffer: 10 * 1024 * 1024 },
+      ['tsx', 'src/index.ts', 'https://docs.github.com/en/copilot', '--output', outputPath, '--max-pages', '10', '--delay', '500'],
+      { cwd: PROJECT_ROOT, maxBuffer: 10 * 1024 * 1024, timeout: TIMEOUT_MS },
     );
     validateEpubStructure(outputPath);
   }, TIMEOUT_MS);
