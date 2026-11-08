@@ -36,6 +36,41 @@ describe('extractContent', () => {
     expect(content).not.toContain('heading-link-symbol');
   });
 
+  it('removes footnote tooltip text but keeps the footnote link and item', () => {
+    // Mimics darioamodei.com: each footnote reference carries a hover-only
+    // tooltip with the full footnote text. In an EPUB there is no hover,
+    // so the tooltip would render inline at every reference and then
+    // again in the Footnotes section. The number link and the footnote
+    // item itself must survive.
+    const html = `<html><body><main><article>
+      <h1>An Essay</h1>
+      <p>Some claim here.<sup id="fnref:2" class="footnote"><a href="#fn:2" class="ref">2</a> <span class="tooltip"><sup>2</sup> <span>Touch grass, in Twitter parlance.</span></span></sup> And then more text.</p>
+      <section><h2 id="footnotes">Footnotes</h2><ol>
+        <li id="fn:2"><sup>2</sup> <span>Touch grass, in Twitter parlance.</span> <a href="#fnref:2">↩︎</a></li>
+      </ol></section>
+    </article></main></body></html>`;
+    const { content } = extractContent(html);
+    // Footnote text appears exactly once: in the Footnotes item, not inline
+    expect(content.match(/Touch grass/g)?.length).toBe(1);
+    expect(content).not.toContain('tooltip');
+    // The reference link, the footnote item, and the back-link all survive
+    expect(content).toContain('href="#fn:2"');
+    expect(content).toContain('id="fn:2"');
+    expect(content).toContain('href="#fnref:2"');
+    expect(content).toContain('And then more text.');
+  });
+
+  it('returns a clean title when the h1 carries a footnote tooltip', () => {
+    const html = `<html><body><main><article>
+      <h1>Machines of Loving Grace<sup id="fnref:1" class="footnote">1<span class="tooltip" aria-hidden="true"><sup>1</sup> <span><a href="https://allpoetry.com/All-Watched-Over-By-Machines-Of-Loving-Grace">https://allpoetry.com/All-Watched-Over-By-Machines-Of-Loving-Grace</a></span></span></sup></h1>
+      <p>Body text.</p>
+    </article></main></body></html>`;
+    const { title, content } = extractContent(html);
+    expect(title).toBe('Machines of Loving Grace');
+    expect(content).not.toContain('allpoetry.com');
+    expect(content).toContain('<h1>Machines of Loving Grace</h1>');
+  });
+
   it('does not add headings when no ghd-tool sections are present', () => {
     const html = `<html><body><main><p>Plain content</p></main></body></html>`;
     const { content } = extractContent(html);

@@ -25,11 +25,34 @@ const STRIP_SELECTORS = [
   '.toc',
 ];
 
+/**
+ * Clean h1 text for use as a chapter title: clone the first h1 and strip
+ * footnote markers, hover-only tooltip content, and aria-hidden spans
+ * before taking its text, so a footnote in the title cannot leak its
+ * tooltip (e.g. a source URL) into the table of contents.
+ * Returns '' when there is no h1.
+ */
+export function cleanH1Text($: cheerio.CheerioAPI): string {
+  const $h1 = $('h1').first().clone();
+  $h1
+    .find('sup[id^="fnref"], sup[class*="footnote"], [aria-hidden="true"], [class*="tooltip"], [class*="Tooltip"]')
+    .remove();
+  return $h1.text().trim();
+}
+
 export function extractContent(html: string, pageUrl?: string): { title: string; content: string } {
   const $ = cheerio.load(html);
 
+  // Footnote tooltips are hover-only: on the site they appear only when the
+  // reader hovers the footnote number, but an EPUB has no hover and no
+  // site CSS to hide them, so the full footnote text would render inline
+  // at every reference and then again in the Footnotes section. Remove
+  // the tooltip spans and keep the number link itself, so the footnote
+  // still links down to its item at the end of the chapter.
+  $('[class*="tooltip"], [class*="Tooltip"]').remove();
+
   const title =
-    $('h1').first().text().trim() ||
+    cleanH1Text($) ||
     $('title').first().text().trim() ||
     'Untitled';
 
@@ -59,6 +82,13 @@ export function extractContent(html: string, pageUrl?: string): { title: string;
       $(anchor).replaceWith($(anchor).html() ?? '');
     });
   });
+
+  // Drop footnote markers from headings. A footnote in a heading (e.g. the
+  // title footnote on an essay) has no working link — its number is just
+  // text — and its tooltip is already removed above, so the marker would
+  // read as a stray digit in the chapter heading. The footnote item itself
+  // stays in the Footnotes section at the end of the chapter.
+  $('h1,h2,h3,h4,h5,h6').find('sup[id^="fnref"], sup[class*="footnote"]').remove();
 
   // Capture breadcrumb links before the nav strip removes them.
   // The breadcrumb <a> hrefs survive into rewriteLinks, which rewrites them to
