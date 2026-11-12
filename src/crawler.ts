@@ -1,4 +1,5 @@
 import * as cheerio from 'cheerio';
+import { cleanH1Text } from './extractor';
 
 export interface CrawledPage {
   url: string;
@@ -86,7 +87,7 @@ export async function crawl(seedUrl: string, options?: CrawlOptions): Promise<Cr
 
     const $ = cheerio.load(html);
     const title =
-      $('h1').first().text().trim() ||
+      cleanH1Text($) ||
       $('title').first().text().trim() ||
       url;
 
