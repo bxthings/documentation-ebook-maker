@@ -1,0 +1,30 @@
+<!--
+  Synthetic fixture mirroring the GitHub Copilot docs shape:
+  .markdown-body content, including a <details open> element: the
+  extractor normalizes its bare boolean attribute (unit-tested in
+  src/extractor.test.ts), and the chapter text must survive into the
+  book either way.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Concepts — GitHub Copilot</title></head>
+<body>
+<nav aria-label="Breadcrumb">
+  <ul>
+    <li><a href="/copilot">GitHub Copilot</a></li>
+    <li><a href="/copilot/concepts">Concepts</a></li>
+  </ul>
+</nav>
+<main>
+  <div class="markdown-body">
+    <h1>Concepts</h1>
+    <p>Core Copilot concepts: completions suggest the next lines of
+    code, chat answers questions, and agents carry out multi-step
+    tasks.</p>
+    <details open><summary>Agents in depth</summary>
+    <p>An agent plans the steps, edits files, and reports back.</p>
+    </details>
+  </div>
+</main>
+</body>
+</html>

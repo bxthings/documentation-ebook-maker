@@ -1,0 +1,50 @@
+<!--
+  Synthetic fixture, not a copy of the live site. It mirrors the
+  structure of the GitHub Copilot docs (docs.github.com/en/copilot)
+  as the extractor sees it, so the integration test exercises the
+  same code paths a real crawl would:
+
+  - Breadcrumb <nav> whose links must be rescued into the chapter
+    before the nav itself is stripped.
+  - Tool tabs: <a data-tool> labels in the nav, with matching
+    <div class="ghd-tool ..."> sections that must gain an <h3>
+    heading each so the content survives nav removal.
+  - Content in .markdown-body inside <main>.
+  - Root-relative links to the other fixture pages (the form the live
+    sites use).
+
+  If the live site changes shape, update this fixture by hand. That
+  is the accepted trade-off: the fixture pins the shapes this tool
+  supports, and the test stays deterministic and gated on every PR
+  instead of depending on a site this repo does not control.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>GitHub Copilot</title></head>
+<body>
+<nav aria-label="Breadcrumb">
+  <ul>
+    <li><a href="/copilot">GitHub Copilot</a></li>
+  </ul>
+</nav>
+<nav>
+  <a data-tool="vscode">Visual Studio Code</a>
+  <a data-tool="webui">Web browser</a>
+</nav>
+<main>
+  <div class="markdown-body">
+    <h1>GitHub Copilot</h1>
+    <p>GitHub Copilot is an AI pair programmer that suggests code and
+    answers questions about your codebase.</p>
+    <div class="ghd-tool vscode"><p>Use Copilot in Visual Studio Code
+    with inline completions and chat.</p></div>
+    <div class="ghd-tool webui"><p>Use Copilot in your web browser
+    through the GitHub website.</p></div>
+    <h2>Where to start</h2>
+    <p>Read <a href="/copilot/getting-started">getting started with Copilot</a>,
+    then learn the <a href="/copilot/concepts">core Copilot concepts</a>.</p>
+  </div>
+</main>
+<footer><p>GitHub footer chrome — must not appear in the book.</p></footer>
+</body>
+</html>

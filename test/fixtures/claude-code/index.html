@@ -1,0 +1,44 @@
+<!--
+  Synthetic fixture, not a copy of the live site. It mirrors the
+  structure of the Claude Code docs (code.claude.com/docs/en/) as the
+  extractor sees it, so the integration test exercises the same code
+  paths a real crawl would:
+
+  - Next.js streaming SSR: a loading-spinner <article> inside <main>,
+    with the real article in a hidden SSR div elsewhere in the
+    document. The extractor must pick the richest article, not the
+    spinner (see CONTENT_SELECTORS in src/extractor.ts).
+  - <nav> / <header> chrome that must be stripped from the chapter.
+  - Root-relative links to the other fixture pages (the form the live
+    sites use), so the crawler follows
+    them as subpaths of the seed URL.
+
+  If the live site changes shape, update this fixture by hand. That is
+  the accepted trade-off: the fixture pins the shapes this tool
+  supports, and the test stays deterministic and gated on every PR
+  instead of depending on a site this repo does not control.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Claude Code</title></head>
+<body>
+<header>
+  <a href="/claude-code">Claude Code Docs</a>
+  <nav><a href="/claude-code/overview">Overview</a><a href="/claude-code/quickstart">Quickstart</a></nav>
+</header>
+<main><article><span>Loading...</span><span>Loading...</span></article></main>
+<div id="S:1" hidden>
+  <article>
+    <h1>Claude Code</h1>
+    <p>Claude Code is an agentic coding tool that lives in your terminal.</p>
+    <p>It understands your codebase, edits files, runs tests, and explains
+    what it changed and why.</p>
+    <h2>Where to start</h2>
+    <p>Read the <a href="/claude-code/overview">overview of Claude Code workflows</a>,
+    then follow the <a href="/claude-code/quickstart">quickstart</a> to run your first
+    session.</p>
+  </article>
+</div>
+<footer><p>Anthropic footer chrome — must not appear in the book.</p></footer>
+</body>
+</html>
